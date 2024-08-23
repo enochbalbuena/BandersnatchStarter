@@ -1,5 +1,6 @@
 import sys
 import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from base64 import b64decode
 from pymongo import MongoClient
 from Fortuna import random_int, random_float
@@ -10,7 +11,7 @@ from app.data import Database
 from app.graph import chart
 from app.machine import Machine
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 
 SPRINT = 1
 APP = Flask(__name__)
