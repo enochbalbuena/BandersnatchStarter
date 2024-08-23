@@ -1,17 +1,32 @@
-from base64 import b64decode
+import sys
 import os
-
+from base64 import b64decode
+from pymongo import MongoClient
 from Fortuna import random_int, random_float
 from MonsterLab import Monster
 from flask import Flask, render_template, request
 from pandas import DataFrame
-
 from app.data import Database
 from app.graph import chart
 from app.machine import Machine
 
-SPRINT = 0
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+SPRINT = 1
 APP = Flask(__name__)
+
+DB_URL = os.getenv("DB_URL")
+
+client = MongoClient(DB_URL)
+db = client.get_database()
+
+db_instance = Database()
+
+db_instance.reset()
+db_instance.seed(1000)
+
+print(f"Number of monsters: {db_instance.count()}")
+print(db_instance.html_table())
 
 
 @APP.route("/")
@@ -28,11 +43,11 @@ def home():
 def data():
     if SPRINT < 1:
         return render_template("data.html")
-    db = Database()
+    database = Database()
     return render_template(
         "data.html",
-        count=db.count(),
-        table=db.html_table(),
+        count=database.count(),
+        table=database.html_table(),
     )
 
 
@@ -40,13 +55,13 @@ def data():
 def view():
     if SPRINT < 2:
         return render_template("view.html")
-    db = Database()
+    database = Database()
     options = ["Level", "Health", "Energy", "Sanity", "Rarity"]
     x_axis = request.values.get("x_axis") or options[1]
     y_axis = request.values.get("y_axis") or options[2]
     target = request.values.get("target") or options[4]
     graph = chart(
-        df=db.dataframe(),
+        df=database.dataframe(),
         x=x_axis,
         y=y_axis,
         target=target,
@@ -57,7 +72,7 @@ def view():
         x_axis=x_axis,
         y_axis=y_axis,
         target=target,
-        count=db.count(),
+        count=database.count(),
         graph=graph,
     )
 
@@ -66,11 +81,11 @@ def view():
 def model():
     if SPRINT < 3:
         return render_template("model.html")
-    db = Database()
+    database = Database()
     options = ["Level", "Health", "Energy", "Sanity", "Rarity"]
     filepath = os.path.join("app", "model.joblib")
     if not os.path.exists(filepath):
-        df = db.dataframe()
+        df = database.dataframe()
         machine = Machine(df[options])
         machine.save(filepath)
     else:
