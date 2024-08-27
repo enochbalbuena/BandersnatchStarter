@@ -13,7 +13,7 @@ from app.machine import Machine
 
 
 
-SPRINT = 1
+SPRINT = 2
 APP = Flask(__name__)
 
 DB_URL = os.getenv("DB_URL")
